@@ -4,7 +4,7 @@ from difflib import SequenceMatcher
 import statistics
 
 
-def less_picked_first(data, pool, iterations=1000, portion=0.33, console_log=False):
+def recent_less_picked_first(data, pool, iterations=1000, portion=0.33, recent=20, console_log=False):
     '''
     @param data [(n1,n2,n3,n4,n5,n6), ...]
     @param pool [n1,n2,.......nx]
@@ -12,13 +12,22 @@ def less_picked_first(data, pool, iterations=1000, portion=0.33, console_log=Fal
     if portion > 1 or portion < 0.13:
         raise Exception('make sure 0.13 <= portion < 1')
 
+    if recent < 0 or recent > len(data):
+        raise Exception('recent out of bound')
+
     numbers_counter = Counter(pool)
     least_common_size = int(len(pool) * portion)
 
     global_hit_rates = []
-    for idx in range(0, len(data)):
+    for idx in range(recent, len(data)):
+        # prepare counter from recent data items
+        recent_d = []
+        for x in data[idx-recent:idx-1]:
+            recent_d += x
+        new_counter = numbers_counter + Counter(recent_d)
+
         d = data[idx]
-        least_commons = [x[0] for x in numbers_counter.most_common()[-1*least_common_size:]]
+        least_commons = [x[0] for x in new_counter.most_common()[-1*least_common_size:]]
 
         #
         local_hit_rates = []
@@ -33,8 +42,6 @@ def less_picked_first(data, pool, iterations=1000, portion=0.33, console_log=Fal
         if console_log:
             print('stage %s, avg rate: %s' % (idx, local_avg_rate))
 
-        # add this time to accumulate
-        numbers_counter += Counter(d)
     
     # print global rate
     global_avg_rate = statistics.mean(global_hit_rates)

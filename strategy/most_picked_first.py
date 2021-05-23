@@ -4,7 +4,7 @@ from difflib import SequenceMatcher
 import statistics
 
 
-def less_picked_first(data, pool, iterations=1000, portion=0.33, console_log=False):
+def most_picked_first(data, pool, iterations=1000, portion=0.33, console_log=False):
     '''
     @param data [(n1,n2,n3,n4,n5,n6), ...]
     @param pool [n1,n2,.......nx]
@@ -13,17 +13,17 @@ def less_picked_first(data, pool, iterations=1000, portion=0.33, console_log=Fal
         raise Exception('make sure 0.13 <= portion < 1')
 
     numbers_counter = Counter(pool)
-    least_common_size = int(len(pool) * portion)
+    most_common_size = int(len(pool) * portion)
 
     global_hit_rates = []
     for idx in range(0, len(data)):
         d = data[idx]
-        least_commons = [x[0] for x in numbers_counter.most_common()[-1*least_common_size:]]
+        most_commons = [x[0] for x in numbers_counter.most_common()[:most_common_size]]
 
         #
         local_hit_rates = []
         for i in range(0, iterations):
-            guess = sample(least_commons, 6)
+            guess = sample(most_commons, 6)
             hit_rate = len(list(set(guess) & set(d)))/len(d)
             local_hit_rates.append(hit_rate)
         local_avg_rate = statistics.mean(local_hit_rates)
